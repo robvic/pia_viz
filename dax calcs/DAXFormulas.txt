@@ -1,0 +1,42 @@
+# Registro de Fórmulas
+
+CONTAGEM_AGENCIAS:=COUNT(agencias[agencia])
+CONTAGEM_ANUNCIOS:=DISTINCTCOUNT(info_agencia[anuncio])
+CONTAGEM_CLIENTES:=DISTINCTCOUNT(info_agencia[cliente])
+TOTAL_RECEITAS:=SUM(registro_receitas[receita])
+YOY_GERAL:=DIVIDE(CALCULATE(SUM(registro_receitas[receita]),registro_receitas[data_ano]=YEAR(NOW())),CALCULATE(SUM(registro_receitas[receita]),registro_receitas[data_ano]=YEAR(NOW())-1))-1
+
+# mes-a-mes agencia
+=ADDCOLUMNS(
+	SUMMARIZE(
+	registro_receitas,
+	registro_receitas[data_mes],
+	registro_receitas[data_ano],
+	agencias[agencia]
+	),
+	"receita mensal",CALCULATE(SUM(registro_receitas[receita]))
+)
+
+# mes-a-mes agencia
+=ADDCOLUMNS(
+	SUMMARIZE(
+	registro_receitas,
+	registro_receitas[data_mes],
+	registro_receitas[data_ano],
+	info_agencia[cliente]
+	),
+	"receita mensal",CALCULATE(SUM(registro_receitas[receita]))
+)
+
+NOVOS_CLIENTES:=CALCULATE(DISTINCTCOUNT('mes-a-mes cliente'[cliente]),'mes-a-mes cliente'[data_ano]=YEAR(NOW()))-CALCULATE(DISTINCTCOUNT('mes-a-mes cliente'[cliente]),'mes-a-mes cliente'[data_ano]=YEAR(NOW())-1)
+
+# YoY mensal
+=SUMMARIZE(
+	'mes-a-mes',
+	'mes-a-mes'[agencia],
+	'mes-a-mes'[data_mes],
+	"yoy mensal",DIVIDE(CALCULATE(SUM('mes-a-mes'[receita mensal]),'mes-a-mes'[data_ano]=YEAR(NOW())),CALCULATE(SUM('mes-a-mes'[receita mensal]),'mes-a-mes'[data_ano]=YEAR(NOW())-1))-1
+	)
+
+# coluna yoy ajustado
+=IF(yoy_mensal[yoy mensal]<0,0,ROUND(yoy_mensal[yoy mensal]*100,0))

@@ -1,0 +1,417 @@
+{
+  "name": "SemanticModel",
+  "compatibilityLevel": 1500,
+  "model": {
+    "culture": "en-US",
+    "dataSources": [
+      {
+        "type": "structured",
+        "name": "SQL/DESKTOP-PK1I7J3;pia",
+        "connectionDetails": {
+          "protocol": "tds",
+          "address": {
+            "server": "DESKTOP-PK1I7J3",
+            "database": "pia"
+          },
+          "authentication": null,
+          "query": null
+        },
+        "credential": {
+          "AuthenticationKind": "Windows",
+          "kind": "SQL",
+          "path": "desktop-pk1i7j3;pia",
+          "Username": "DESKTOP-PK1I7J3\\Roberto",
+          "EncryptConnection": false
+        }
+      }
+    ],
+    "tables": [
+      {
+        "name": "agencias",
+        "columns": [
+          {
+            "name": "agencia",
+            "dataType": "string",
+            "sourceColumn": "agencia"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-PK1I7J3;pia\",",
+                "    dbo_agencias = Source{[Schema=\"dbo\",Item=\"agencias\"]}[Data]",
+                "in",
+                "    dbo_agencias"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "CONTAGEM_AGENCIAS",
+            "expression": "COUNT(agencias[agencia])"
+          }
+        ]
+      },
+      {
+        "name": "faixa_incentivos",
+        "columns": [
+          {
+            "name": "item",
+            "dataType": "string",
+            "sourceColumn": "item"
+          },
+          {
+            "name": "limite_inferior",
+            "dataType": "double",
+            "sourceColumn": "limite_inferior"
+          },
+          {
+            "name": "limite_superior",
+            "dataType": "double",
+            "sourceColumn": "limite_superior"
+          },
+          {
+            "name": "indices",
+            "dataType": "double",
+            "sourceColumn": "indices"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-PK1I7J3;pia\",",
+                "    dbo_faixa_incentivos = Source{[Schema=\"dbo\",Item=\"faixa_incentivos\"]}[Data]",
+                "in",
+                "    dbo_faixa_incentivos"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "info_agencia",
+        "columns": [
+          {
+            "name": "agencia",
+            "dataType": "string",
+            "sourceColumn": "agencia"
+          },
+          {
+            "name": "cliente",
+            "dataType": "int64",
+            "sourceColumn": "cliente"
+          },
+          {
+            "name": "anuncio",
+            "dataType": "int64",
+            "sourceColumn": "anuncio"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-PK1I7J3;pia\",",
+                "    dbo_info_agencia = Source{[Schema=\"dbo\",Item=\"info_agencia\"]}[Data]",
+                "in",
+                "    dbo_info_agencia"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "CONTAGEM_CLIENTES",
+            "expression": "DISTINCTCOUNT(info_agencia[cliente])"
+          },
+          {
+            "name": "CONTAGEM_ANUNCIOS",
+            "expression": "DISTINCTCOUNT(info_agencia[anuncio])"
+          }
+        ]
+      },
+      {
+        "name": "registro_receitas",
+        "columns": [
+          {
+            "name": "anuncio",
+            "dataType": "int64",
+            "sourceColumn": "anuncio"
+          },
+          {
+            "name": "plataforma",
+            "dataType": "string",
+            "sourceColumn": "plataforma"
+          },
+          {
+            "name": "data_mes",
+            "dataType": "string",
+            "sourceColumn": "data_mes"
+          },
+          {
+            "name": "data_ano",
+            "dataType": "int64",
+            "sourceColumn": "data_ano"
+          },
+          {
+            "name": "receita",
+            "dataType": "double",
+            "sourceColumn": "receita"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-PK1I7J3;pia\",",
+                "    dbo_registro_receitas = Source{[Schema=\"dbo\",Item=\"registro_receitas\"]}[Data]",
+                "in",
+                "    dbo_registro_receitas"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "TOTAL_RECEITAS",
+            "expression": "SUM(registro_receitas[receita])"
+          },
+          {
+            "name": "YOY_GERAL",
+            "expression": "DIVIDE(CALCULATE(SUM(registro_receitas[receita]),registro_receitas[data_ano]=YEAR(NOW())),CALCULATE(SUM(registro_receitas[receita]),registro_receitas[data_ano]=YEAR(NOW())-1))-1"
+          }
+        ]
+      },
+      {
+        "name": "mes-a-mes agencia",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "data_mes",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "registro_receitas[data_mes]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "data_ano",
+            "dataType": "int64",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "registro_receitas[data_ano]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "agencia",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "agencias[agencia]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "receita mensal",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[receita mensal]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 1",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "ADDCOLUMNS(",
+                "\tSUMMARIZE(",
+                "\tregistro_receitas,",
+                "\tregistro_receitas[data_mes],",
+                "\tregistro_receitas[data_ano],",
+                "\tagencias[agencia]",
+                "\t),",
+                "\t\"receita mensal\",CALCULATE(SUM(registro_receitas[receita]))",
+                ")\t"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "yoy_mensal",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "yoy mensal",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[yoy mensal]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "agencia",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "mes-a-mes agencia[agencia]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "data_mes",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "mes-a-mes agencia[data_mes]"
+          },
+          {
+            "type": "calculated",
+            "name": "yoy ajustado",
+            "dataType": "double",
+            "isDataTypeInferred": true,
+            "expression": "IF(yoy_mensal[yoy mensal]<0,0,ROUND(yoy_mensal[yoy mensal]*100,0))"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 1",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "SUMMARIZE(",
+                "\t'mes-a-mes agencia',",
+                "\t'mes-a-mes agencia'[agencia],",
+                "\t'mes-a-mes agencia'[data_mes],",
+                "\t\"yoy mensal\",DIVIDE(CALCULATE(SUM('mes-a-mes agencia'[receita mensal]),'mes-a-mes agencia'[data_ano]=YEAR(NOW())),CALCULATE(SUM('mes-a-mes agencia'[receita mensal]),'mes-a-mes agencia'[data_ano]=YEAR(NOW())-1))-1",
+                "\t)"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "mes-a-mes cliente",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "data_mes",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "registro_receitas[data_mes]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "data_ano",
+            "dataType": "int64",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "registro_receitas[data_ano]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "cliente",
+            "dataType": "int64",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "info_agencia[cliente]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "receita mensal",
+            "dataType": "double",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[receita mensal]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 1",
+            "source": {
+              "type": "calculated",
+              "expression": [
+                "ADDCOLUMNS(",
+                "\tSUMMARIZE(",
+                "\tregistro_receitas,",
+                "\tregistro_receitas[data_mes],",
+                "\tregistro_receitas[data_ano],",
+                "\tinfo_agencia[cliente]",
+                "\t),",
+                "\t\"receita mensal\",CALCULATE(SUM(registro_receitas[receita]))",
+                ")\t"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "NOVOS_CLIENTES",
+            "expression": "CALCULATE(DISTINCTCOUNT('mes-a-mes cliente'[cliente]),'mes-a-mes cliente'[data_ano]=YEAR(NOW()))-CALCULATE(DISTINCTCOUNT('mes-a-mes cliente'[cliente]),'mes-a-mes cliente'[data_ano]=YEAR(NOW())-1)"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "e49dc839-9225-44de-957a-8f54fed0b510",
+        "fromCardinality": "one",
+        "fromTable": "registro_receitas",
+        "fromColumn": "anuncio",
+        "toTable": "info_agencia",
+        "toColumn": "anuncio",
+        "crossFilteringBehavior": "bothDirections"
+      },
+      {
+        "name": "1d6caf18-586c-4d16-9e52-e23d89c411e2",
+        "fromTable": "info_agencia",
+        "fromColumn": "agencia",
+        "toTable": "agencias",
+        "toColumn": "agencia"
+      },
+      {
+        "name": "a016b241-1731-45e2-9950-d492d8fc97f5",
+        "fromTable": "yoy_mensal",
+        "fromColumn": "agencia",
+        "toTable": "agencias",
+        "toColumn": "agencia",
+        "crossFilteringBehavior": "bothDirections"
+      },
+      {
+        "name": "f3133a69-229f-4b31-a112-5d9d03cb5c11",
+        "fromTable": "faixa_incentivos",
+        "fromColumn": "item",
+        "toTable": "agencias",
+        "toColumn": "agencia",
+        "crossFilteringBehavior": "bothDirections"
+      }
+    ],
+    "annotations": [
+      {
+        "name": "ClientCompatibilityLevel",
+        "value": "600"
+      }
+    ]
+  },
+  "id": "SemanticModel"
+}
